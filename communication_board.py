@@ -7,28 +7,38 @@ from pymavlink import mavutil
 async def websocket_server(websocket, path):
     # Receive and process incoming messages
     async for message in websocket:
-        # master = mavutil.mavlink_connection('192.168.0.104:14550')
-        # master.wait_heartbeat()
+        master = mavutil.mavlink_connection('192.168.0.105:14550')
+
+        while True:
+            msg = master.recv_match()
+            if not msg:
+                continue
+            if msg.get_type() == 'HEARTBEAT':
+                print("\n\n*****Got message: %s*****" % msg.get_type())
+                print("Message: %s" % msg)
+                print("\nAs dictionary: %s" % msg.to_dict())
+                # Armed = MAV_STATE_STANDBY (4), Disarmed = MAV_STATE_ACTIVE (3)
+                print("\nSystem status: %s" % msg.system_status)
+                break
 
         data = json.loads(message)
-        #print("Received JSON data:", data)
+        print("Received JSON data:", data)
 
         if data['arm'] == 1:
             # Send the response back to the client
-            print('armed')
-            # master.mav.command_long_send(master.target_system, master.target_component,
-            #                              mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
-            #                              0, 1, 0, 0, 0, 0, 0, 0)
-            # while True:
-            #     msg = master.recv_msg()
-            #     if msg and msg.get_type() == 'COMMAND_ACK' and msg.command == mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM:
-            #         if msg.result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
-            #             # send acknowledgement back to console
-            #             break
-            #         else:
-            #             # send acknowledgement back to console
-            #             # exit()
-            #             break
+            master.mav.command_long_send(master.target_system, master.target_component,
+                                         mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                                         0, 1, 0, 0, 0, 0, 0, 0)
+            while True:
+                msg = master.recv_msg()
+                if msg and msg.get_type() == 'COMMAND_ACK' and msg.command == mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM:
+                    if msg.result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
+                        print('armed')
+                        break
+                    else:
+                        print('Error arming the drone')
+                        # exit()
+                        break
 
         if data['disarm'] == 1:
             print("disarmed")
