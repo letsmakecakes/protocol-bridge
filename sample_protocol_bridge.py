@@ -6,7 +6,7 @@ import rel
 import json
 import websocket
 
-master = mavutil.mavlink_connection('192.168.0.104:14550')
+master = mavutil.mavlink_connection('udp:192.168.0.105:14551')
 master.wait_heartbeat()
 
 
@@ -26,6 +26,7 @@ def on_message(ws, message):
     # if mode is in loiter
     if int(json_data['mode']) == 1:
         mode = 'LOITER'
+
         if mode not in master.mode_mapping():
             print('Unknown mode : {}'.format(mode))
             print('Try:', list(master.mode_mapping().keys()))
