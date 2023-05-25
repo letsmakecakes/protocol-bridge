@@ -1,7 +1,6 @@
 from pymavlink import mavutil
 
-# master = mavutil.mavlink_connection('192.168.0.101:14551')
-master = mavutil.mavlink_connection('192.168.0.105:14550')
+master = mavutil.mavlink_connection('192.168.0.108:14550')
 
 while True:
     msg = master.recv_match()
